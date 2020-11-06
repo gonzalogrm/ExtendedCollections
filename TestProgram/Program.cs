@@ -24,7 +24,7 @@ namespace ExtendedCollections
             //TestNestedDictionaryToProfile.GenerateDictionary();
             //TestNestedDictionaryToProfile.GenerateCoordinatedDictionary();
 
-            ProfileTest3();
+            ProfileTest4();
 
             long memory = GC.GetTotalMemory(true);
             Console.WriteLine("Waiting Input to End MAIN.");
@@ -1352,7 +1352,7 @@ namespace ExtendedCollections
         static void ProfileTest4A()
         {
             string statistics;
-            int numIterations = 10000;
+            int numIterations = 1000;
 
             TestNestedDictionaryToProfile.SetSearchXY(0, 0);
             TestNestedDictionaryToProfile.SetSizes(1000, 1000, 2, 2);
