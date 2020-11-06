@@ -43,8 +43,20 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Collections\CoordinatedDictionary2D.cs" />
+    <Compile Include="Collections\ExtendedArray.cs" />
+    <Compile Include="Collections\ExtendedJaggedArray.cs" />
+    <Compile Include="Collections\I2DCollection.cs" />
+    <Compile Include="Collections\MathExtensions.cs" />
+    <Compile Include="Collections\NestedDictionary.cs" />
+    <Compile Include="Collections\Point2D.cs" />
+    <Compile Include="Collections\ProfilerTools.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TestOperations\TestExtendedArray.cs" />
+    <Compile Include="TestOperations\TestExtendedArrayToProfile.cs" />
+    <Compile Include="TestOperations\TestNestedDictionary.cs" />
+    <Compile Include="TestOperations\TestNestedDictionaryToProfile.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
