@@ -177,6 +177,14 @@ namespace ExtendedCollections
             dictionary[point] = value;
         }
 
+        //Remove Methods
+        public void Remove(X x, Y y)
+        {
+            Point2D<X, Y> point = new Point2D<X, Y>(x, y);
+            dictionary.Remove(point);
+        }
+
+
         //Search Methods
         //Devuelve default(T) si no encuentra la key
         public T TryGet(X x, Y y)

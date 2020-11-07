@@ -33,6 +33,18 @@ namespace ExtendedCollections
             }
         }
 
+        //Remove Methods
+        public void Remove(X x, Y y)
+        {
+            Dictionary<Y, T> inner;
+            if (nestedDictionary.TryGetValue(x, out inner))
+            {
+                inner.Remove(y);
+                if (inner.Count() == 0)
+                    nestedDictionary.Remove(x);
+            }
+        }
+
 
         //Search Methods
         public T TryGet(X x, Y y)  
@@ -360,7 +372,7 @@ namespace ExtendedCollections
         /// </summary>
         /// <param name="x"></param>
         /// <param name="y"></param>
-        public void RemoveUnchecked(int x, int y)
+        private void RemoveUnchecked(int x, int y)
         {
             nestedDictionary[x].Remove(y);
             if (nestedDictionary[x].Count() == 0)

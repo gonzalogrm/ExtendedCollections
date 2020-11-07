@@ -14,6 +14,7 @@ namespace ExtendedCollections
         List<T> GetInXToList(X x);
         List<T> GetInYToList(Y y);
         void Put(X x, Y y, T value);
+        void Remove(X x, Y y);
     }
 
     interface I2DCollection<T>
@@ -25,5 +26,6 @@ namespace ExtendedCollections
         List<T> GetInYToList(int y);
         List<T> GetAnyInAreaToList(int x1, int x2, int y1, int y2);
         void Put(int x, int y, T value);
+        void Remove(int x, int y);
     }
 }
