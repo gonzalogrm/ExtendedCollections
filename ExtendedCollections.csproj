@@ -48,6 +48,7 @@
     <Compile Include="Collections\ExtendedArray.cs" />
     <Compile Include="Collections\ExtendedJaggedArray.cs" />
     <Compile Include="Collections\I2DCollection.cs" />
+    <Compile Include="Collections\NestedDictionaryUINT64.cs" />
     <Compile Include="Math\MathExtensions.cs" />
     <Compile Include="Math\Matrix.cs" />
     <Compile Include="Collections\NestedDictionary.cs" />

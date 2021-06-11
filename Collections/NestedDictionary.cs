@@ -178,22 +178,6 @@ namespace ExtendedCollections
         }
 
         //Insertion Methods
-        public void PutOlD(X x, Y y, T value)
-        {
-            Dictionary<Y, T> inner;
-            if (nestedDictionary.ContainsKey(x))
-            {
-                inner = nestedDictionary[x];
-                inner[y] = value;
-            }
-            else //El diccionario externo no contiene diccionario interno para x
-            {
-                inner = new Dictionary<Y, T>();
-                inner[y] = value;
-                nestedDictionary[x] = inner;
-            }
-        }
-
         public void Put(X x, Y y, T value)
         {
             Dictionary<Y, T> inner;
@@ -237,16 +221,15 @@ namespace ExtendedCollections
     {
         //Attributes
         private Dictionary<int, Dictionary<int, T>> nestedDictionary;
-        private Dictionary<int, HashSet<int>> YMap;
+        private Dictionary<int, HashSet<int>> YtoXMap;
 
 
         //Constructors
         public NestedDictionary()
         {
             nestedDictionary = new Dictionary<int, Dictionary<int, T>>();
-            YMap = new Dictionary<int, HashSet<int>>();
+            YtoXMap = new Dictionary<int, HashSet<int>>();
         }
-
 
         //Insertion Methods
         public void Put(int x, int y, T value)
@@ -261,67 +244,32 @@ namespace ExtendedCollections
             AddToYMap(y, x);
         }
 
-        private void PutOld(int x, int y, T value)
-        {
-            Dictionary<int, T> inner;
-            if (nestedDictionary.TryGetValue(x, out inner))
-            {
-                inner[y] = value;
-            }
-            else //El diccionario externo no contiene diccionario interno para x
-            {
-                inner = new Dictionary<int, T>();
-                inner[y] = value;
-                nestedDictionary[x] = inner;
-            }
-            AddToYMap(y, x);
-        }
-
-        private void PutOld2(int x, int y, T value)
-        {
-            Dictionary<int, T> inner;
-            if (nestedDictionary.ContainsKey(x))
-            {
-                inner = nestedDictionary[x];
-                inner[y] = value;
-            }
-            else //El diccionario externo no contiene diccionario interno para x
-            {
-                inner = new Dictionary<int, T>();
-                inner[y] = value;
-                nestedDictionary[x] = inner;
-            }
-        }
-
         //Auxiliar Methods
         private void AddToYMap(int y, int x)
         {
             HashSet<int> inner;
-            if (YMap.TryGetValue(y, out inner))
-            {
-                inner.Add(x);
-            }
-            else //El diccionario externo no contiene diccionario interno para x
+            if (!YtoXMap.TryGetValue(y, out inner))
             {
                 inner = new HashSet<int>();
-                inner.Add(x);
-                YMap[y] = inner;
+                YtoXMap[y] = inner;
             }
+            inner.Add(x);
         }
+
 
         /// <summary>
         /// Removes from auxiliarDictionary cheking keys
         /// </summary>
         /// <param name="y"></param>
         /// <param name="x"></param>
-        private void RemoveFromAuxiliar(int y, int x)
+        private void RemoveFromYMap(int y, int x)
         {
             HashSet<int> inner;
-            if (YMap.TryGetValue(y, out inner))
+            if (YtoXMap.TryGetValue(y, out inner))
             {
                 inner.Remove(x);
-                if (YMap[y].Count() == 0)
-                    YMap.Remove(y);
+                if (YtoXMap[y].Count == 0)
+                    YtoXMap.Remove(y);
             }
         }
 
@@ -330,40 +278,23 @@ namespace ExtendedCollections
         /// </summary>
         /// <param name="y"></param>
         /// <param name="x"></param>
-        private void RemoveFromAuxiliarUnchecked(int y, int x)
+        private void RemoveFromYMapUnchecked(int y, int x)
         {
-            YMap[y].Remove(x);
-            if (YMap[y].Count() == 0)
-                YMap.Remove(y);
+            YtoXMap[y].Remove(x);
+            if (YtoXMap[y].Count == 0)
+                YtoXMap.Remove(y);
         }
 
-        //Remove Methods
-        /// <summary>
-        /// Not used by other Removal Methods. Removes from nestedDictionary and auxiliarDictionary cheking keys
-        /// </summary>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
-        public void RemoveOld(int x, int y)
-        {
-            Dictionary<int, T> inner;
-            if (nestedDictionary.TryGetValue(x, out inner))
-            {
-                inner.Remove(y);
-                if (nestedDictionary[x].Count() == 0)
-                    nestedDictionary.Remove(x);
-                RemoveFromAuxiliar(y, x);
-            }
-        }
-
+        //Remove Methods       
         public void Remove(int x, int y)
         {
             Dictionary<int, T> inner;
             if (nestedDictionary.TryGetValue(x, out inner))
             {
                 inner.Remove(y);
-                if (inner.Count() == 0)
+                if (inner.Count == 0)
                     nestedDictionary.Remove(x);
-                RemoveFromAuxiliar(y, x);
+                RemoveFromYMap(y, x);
             }
         }
 
@@ -374,16 +305,17 @@ namespace ExtendedCollections
         /// <param name="y"></param>
         private void RemoveUnchecked(int x, int y)
         {
-            nestedDictionary[x].Remove(y);
-            if (nestedDictionary[x].Count() == 0)
+            Dictionary<int, T> inner = nestedDictionary[x];
+            inner.Remove(y);
+            if (inner.Count == 0)
                 nestedDictionary.Remove(x);
-            RemoveFromAuxiliarUnchecked(y, x);
+            RemoveFromYMapUnchecked(y, x);
         }
 
-        public void RemoveHorizontal(int x1, int x2, int y)
+        public void RemoveConstantY(int x1, int x2, int y)
         {
             HashSet<int> inner;
-            if (YMap.TryGetValue(y, out inner))
+            if (YtoXMap.TryGetValue(y, out inner))
             {
                 foreach (int x in new List<int>(inner))
                 {
@@ -393,24 +325,10 @@ namespace ExtendedCollections
             }
         }
 
-        public void RemoveHorizontalOld(int x1, int x2, int y)
-        {
-            //Búsqueda en X
-            foreach (KeyValuePair<int, Dictionary<int, T>> outkv in nestedDictionary)
-            {
-                if (outkv.Key >= x1 && outkv.Key <= x2)
-                {
-                    //Búsqueda en Y
-                    if (outkv.Value.ContainsKey(y))
-                        RemoveUnchecked(outkv.Key, y);
-                }
-            }
-        }
-
-        public void RemoveAllHorizontal(int y)
+        public void RemoveAllConstantY(int y)
         {
             HashSet<int> inner;
-            if (YMap.TryGetValue(y, out inner))
+            if (YtoXMap.TryGetValue(y, out inner))
             {
                 foreach (int x in new List<int>(inner))
                 {
@@ -419,13 +337,14 @@ namespace ExtendedCollections
             }
         }
 
-        public void RemoveVertical(int x, int y1, int y2)
+        public void RemoveConstantX(int x, int y1, int y2)
         {
             Dictionary<int, T> inner;
             if (nestedDictionary.TryGetValue(x, out inner))
             {
                 //Dictionary<int, T> innerCopy = new Dictionary<int, T>(inner);
-                foreach (KeyValuePair<int, T> kv in new Dictionary<int, T>(inner))
+                foreach (KeyValuePair<int, T> kv in
+                    new Dictionary<int, T>(inner))
                 {
                     if (kv.Key >= y1 && kv.Key <= y2)
                     {
@@ -435,23 +354,7 @@ namespace ExtendedCollections
             }
         }
 
-        public void RemoveVerticalOld(int x, int y1, int y2)
-        {
-            //Búsqueda en Y
-            foreach (KeyValuePair<int, HashSet<int>> outkv in YMap)
-            {
-                if (outkv.Key >= y1 && outkv.Key <= y2)
-                {
-                    //Búsqueda en X
-                    if (outkv.Value.Contains(x))
-                    {
-                        RemoveUnchecked(x, outkv.Key);
-                    }
-                }
-            }
-        }
-
-        public void RemoveAllVertical(int x)
+        public void RemoveAllConstantX(int x)
         {
             Dictionary<int, T> inner;
             if (nestedDictionary.TryGetValue(x, out inner))
@@ -467,7 +370,8 @@ namespace ExtendedCollections
         public void RemoveInArea(int x1, int x2, int y1, int y2)
         {
             //Búsqueda en X
-            foreach (KeyValuePair<int, Dictionary<int, T>> outkv in new Dictionary<int, Dictionary<int, T>>(nestedDictionary))
+            foreach (KeyValuePair<int, Dictionary<int, T>> outkv
+                in new Dictionary<int, Dictionary<int, T>>(nestedDictionary))
             {
                 //Búsqueda en Y
                 if (outkv.Key >= x1 && outkv.Key <= x2)
@@ -490,25 +394,35 @@ namespace ExtendedCollections
             return nestedDictionary.Count;
         }
 
-        public int CountInternalKeys(int x)
+        public int CountInternalYKeysInX(int x)
         {
-            return (nestedDictionary.ContainsKey(x)) ? nestedDictionary[x].Count() : 0;
+            return (nestedDictionary.ContainsKey(x)) ? nestedDictionary[x].Count : 0;
+        }
+
+        public int CountInternalXKeysInY(int y)
+        {
+            return nestedDictionary[y].Count;
         }
 
         public int CountTotal()
         {
-            int result = 0;
-            foreach (KeyValuePair<int, Dictionary<int, T>> outkv in nestedDictionary)
-            {
-                result += CountInternalKeys(outkv.Key);
-            }
-            return result;
+            return nestedDictionary.Count * YtoXMap.Count;
         }
 
-        public bool CheckYContainsX(int y, int x)
+        public bool CheckXContainsY(int x, int y)
+        {
+            Dictionary<int, T> inner;
+            if (nestedDictionary.TryGetValue(x, out inner))
+            {
+                return inner.ContainsKey(y);
+            }
+            return false;
+        }
+
+        public bool CheckYContainsX(int x, int y)
         {
             HashSet<int> inner;
-            if (YMap.TryGetValue(y, out inner))
+            if (YtoXMap.TryGetValue(y, out inner))
             {
                 return inner.Contains(x);
             }
@@ -535,27 +449,24 @@ namespace ExtendedCollections
             return nestedDictionary[x][y];
         }
 
-        public T GetOld(int x, int y)
-        {
-            try
-            {
-                return nestedDictionary[x][y];
-            }
-            catch (KeyNotFoundException e)
-            {
-                //Console.WriteLine(e.ToString());
-                return default(T);
-            }
-        }
-
         public NestedDictionary<T> GetInXToNestedDictionary(int x)
         {
-            NestedDictionary<T> result = new NestedDictionary<T>();
             Dictionary<int, T> inner;
             if (nestedDictionary.TryGetValue(x, out inner))
             {
+                NestedDictionary<T> result = new NestedDictionary<T>();
                 result.nestedDictionary[x] = inner;
                 return result;
+            }
+            return null;
+        }
+
+        public Dictionary<int, T> GetInXToDictionary(int x)
+        {
+            Dictionary<int, T> inner;
+            if (nestedDictionary.TryGetValue(x, out inner))
+            {
+                return inner;
             }
             return null;
         }
@@ -575,7 +486,7 @@ namespace ExtendedCollections
                     result.nestedDictionary[kv.Key] = innerDict;
                 }
             }
-            return (result.nestedDictionary.Count() > 0) ? result : null;
+            return (result.nestedDictionary.Count > 0) ? result : null;
         }
 
         public List<T> GetInXToList(int x)
@@ -584,15 +495,8 @@ namespace ExtendedCollections
             Dictionary<int, T> inner;
             if (nestedDictionary.TryGetValue(x, out inner))
             {
-                /*
-                foreach (KeyValuePair<int, T> kv in inner)
-                {
-                    result.Add(kv.Value);
-                }
-                */
                 result = inner.Values.ToList();
             }
-            //return (result.Count() > 0) ? result : null;
             return result;
         }
 
@@ -609,7 +513,6 @@ namespace ExtendedCollections
                     result.Add(innerValue);
                 }
             }
-            //return (result.Count() > 0) ? result : null;
             return result;
         }
 
@@ -620,7 +523,7 @@ namespace ExtendedCollections
             List<T> result = new List<T>();
 
             HashSet<int> inner;
-            if (YMap.TryGetValue(y, out inner))
+            if (YtoXMap.TryGetValue(y, out inner))
             {
                 foreach (int x in inner)
                 {
@@ -650,53 +553,6 @@ namespace ExtendedCollections
                     }
                 }
             }
-            //return (result.Count() > 0) ? result : null;
-            return result;
-        }
-
-        public List<T> GetAnyInAreaToListContainsHomo(int x1, int x2, int y1, int y2)
-        {
-            List<T> result = new List<T>();
-            Dictionary<int, T> inner;
-
-            if (YMap.Count < nestedDictionary.Count)
-            {
-                for (int y = y1; y <= y2; y++)
-                {
-                    HashSet<int> innerY;
-                    if (YMap.TryGetValue(y, out innerY))
-                    {
-                        foreach (int x in new List<int>(innerY))
-                        {
-                            if (x >= x1 && x <= x2)
-                            {
-                                inner = nestedDictionary[x];
-                                result.Add(inner[y]);
-                            }
-                        }
-                    }
-                }
-            }
-            else
-            {
-                //Búsqueda en X
-                for (int i = x1; i <= x2; i++)
-                {
-                    if (nestedDictionary.ContainsKey(i))
-                    {
-                        //Búsqueda en Y
-                        inner = nestedDictionary[i];
-                        for (int j = y1; j <= y2; j++)
-                        {
-                            if (inner.ContainsKey(j))
-                                result.Add(inner[j]);
-                        }
-                    }
-                }
-            }
-
-
-            //return (result.Count() > 0) ? result : null;
             return result;
         }
 
@@ -718,55 +574,6 @@ namespace ExtendedCollections
                     }
                 }
             }
-            //return (result.Count() > 0) ? result : null;
-            return result;
-        }
-
-        public List<T> GetAnyInAreaToListHomo(int x1, int x2, int y1, int y2)
-        {
-            List<T> result = new List<T>();
-
-            if (YMap.Count < nestedDictionary.Count)
-            {
-                Dictionary<int, T> inner;
-                HashSet<int> innerX;
-                foreach (KeyValuePair<int, HashSet<int>> outkv in YMap)
-                {
-                    if (outkv.Key >= y1 && outkv.Key <= y2)
-                    {
-                        innerX = YMap[outkv.Key];
-                        foreach (int x in innerX)
-                        {
-                            if (x >= x1 && x <= x2)
-                            {
-                                inner = nestedDictionary[x];
-                                result.Add(inner[outkv.Key]);
-                            }
-                        }
-                    }
-                }
-            }
-            else
-            {
-                //Búsqueda en X
-                foreach (KeyValuePair<int, Dictionary<int, T>> outkv in nestedDictionary)
-                {
-                    //Búsqueda en Y
-                    if (outkv.Key >= x1 && outkv.Key <= x2)
-                    {
-                        foreach (KeyValuePair<int, T> inkv in outkv.Value)
-                        {
-                            //Búsqueda en Y
-                            if (inkv.Key >= y1 && inkv.Key <= y2)
-                            {
-                                result.Add(inkv.Value);
-                            }
-                        }
-                    }
-                }
-            }
-
-            //return (result.Count() > 0) ? result : null;
             return result;
         }
 
@@ -792,7 +599,6 @@ namespace ExtendedCollections
                     }
                 }
             }
-            //return (result.Count() > 0) ? result : null;
             return result;
         }
 
@@ -802,17 +608,8 @@ namespace ExtendedCollections
             //Búsqueda en X
             foreach (KeyValuePair<int, Dictionary<int, T>> outkv in nestedDictionary)
             {
-                //Búsqueda en Y
-                /*
-                foreach (KeyValuePair<int, T> inkv in outkv.Value)
-                {
-                    result.Add(inkv.Value);
-                }
-                */
                 result.AddRange(outkv.Value.Values.ToList());
             }
-
-            //return (result.Count() > 0) ? result : null;
             return result;
         }
 
@@ -838,7 +635,6 @@ namespace ExtendedCollections
                     }
                 }
             }
-            //return (result.Count() > 0) ? result : null;
             return result;
         }
 
@@ -887,7 +683,7 @@ namespace ExtendedCollections
         public string PrintYtoXKeysToConsole()
         {
             string print = "";
-            foreach (KeyValuePair<int, HashSet<int>> outerKV in YMap)
+            foreach (KeyValuePair<int, HashSet<int>> outerKV in YtoXMap)
             {
                 print += "(" + outerKV.Key + "): ";
                 foreach (int innerKV in outerKV.Value)
@@ -898,7 +694,5 @@ namespace ExtendedCollections
             }
             return print;
         }
-
     }
-
 }
